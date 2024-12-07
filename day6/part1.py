@@ -7,7 +7,7 @@ def get_map():
             map_grid.append(row)
         return map_grid
 
-class Karen:
+class Karel:
     # map = get_map()
 
     def __init__(self, row: int, col: int, symbol: str, map_grid: list):
@@ -62,7 +62,7 @@ class Karen:
             beepers += row.count("X")
         return beepers
 
-def find_karen(map_grid):
+def find_karel(map_grid):
     # map_grid = get_map()
     symbols = [">", "v", "<", "^"]
     for i in range(len(map_grid)):
@@ -72,20 +72,20 @@ def find_karen(map_grid):
 
 def main():
     map_grid = get_map()
-    row, col, symbol = find_karen(map_grid)
-    karen = Karen(row, col, symbol, map_grid)
+    row, col, symbol = find_karel(map_grid)
+    karel = Karel(row, col, symbol, map_grid)
 
     while True:
-        karen.put_beeper()
-        karen.print_map()
+        karel.put_beeper()
+        karel.print_map()
         try:
-            if karen.if_front_is_clear():
-                karen.move()
+            if karel.if_front_is_clear():
+                karel.move()
             else:
-                karen.turn_right()
-                karen.move()
+                karel.turn_right()
+                karel.move()
         except IndexError:
-            print(karen.count_beepers())
+            print(karel.count_beepers())
             break
 
 if __name__ == "__main__":
