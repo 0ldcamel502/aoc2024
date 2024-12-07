@@ -1,19 +1,20 @@
 
 def get_map():
-    map = []
+    map_grid = []
     with open("p1sdata.txt") as file:
         for line in file:
             row = [c for c in line.strip()]
-            map.append(row)
-        return map
+            map_grid.append(row)
+        return map_grid
 
 class Karen:
-    map = get_map()
+    # map = get_map()
 
-    def __init__(self, row: int, col: int, symbol: str):
+    def __init__(self, row: int, col: int, symbol: str, map_grid: list):
         self.row = row
         self.col = col
         self.symbol = symbol
+        self.map_grid = map_grid
 
     def get_direction(self):
         directions = {">": (0, 1), "<": (0, -1), "^": (-1, 0), "v": (1, 0)}
@@ -24,9 +25,9 @@ class Karen:
 
     def if_front_is_clear(self):
         dlt_row, dlt_col = self.get_direction()
-        if Karen.map[self.row + dlt_row][self.col + dlt_col] in [".", "X"]:
+        if self.map_grid[self.row + dlt_row][self.col + dlt_col] in [".", "X"]:
             return True
-        elif Karen.map[self.row + dlt_row][self.col + dlt_col] == "#":
+        elif self.map_grid[self.row + dlt_row][self.col + dlt_col] == "#":
             return False
         else:
             return "over"
@@ -36,14 +37,14 @@ class Karen:
         if self.if_front_is_clear():
             self.row += dlt_row
             self.col += dlt_col
-            Karen.map[self.row][self.col] = self.symbol
+            self.map_grid[self.row][self.col] = self.symbol
 
     def put_beeper(self):
         row, col = self.row, self.col
-        Karen.map[row][col] = "X"
+        self.map_grid[row][col] = "X"
     
     def print_map(self):
-        for row in Karen.map:
+        for row in self.map_grid:
             print(row)
         print()
 
@@ -57,21 +58,22 @@ class Karen:
     
     def count_beepers(self):
         beepers = 0
-        for row in Karen.map:
+        for row in self.map_grid:
             beepers += row.count("X")
         return beepers
 
-def find_karen():
-    map = get_map()
+def find_karen(map_grid):
+    # map_grid = get_map()
     symbols = [">", "v", "<", "^"]
-    for i in range(len(map)):
-        for j in range(len(map[0])):
-            if map[i][j] in symbols:
-                return i, j, map[i][j]
+    for i in range(len(map_grid)):
+        for j in range(len(map_grid[0])):
+            if map_grid[i][j] in symbols:
+                return i, j, map_grid[i][j]
 
 def main():
-    row, col, symbol = find_karen()
-    karen = Karen(row, col, symbol)
+    map_grid = get_map()
+    row, col, symbol = find_karen(map_grid)
+    karen = Karen(row, col, symbol, map_grid)
 
     while True:
         karen.put_beeper()
