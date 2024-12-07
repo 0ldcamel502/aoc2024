@@ -5,7 +5,6 @@ class Karel:
         self.col = col
         self.symbol = symbol
         self.map_grid = map_grid
-        # self.loop = {">": 0, "<": 0, "^": 0, "v": 0}
 
     def get_direction(self):
         directions = {">": (0, 1), "<": (0, -1), "^": (-1, 0), "v": (1, 0)}
@@ -17,13 +16,9 @@ class Karel:
     def if_front_is_clear(self):
         dlt_row, dlt_col = self.get_direction()
         if self.map_grid[self.row + dlt_row][self.col + dlt_col] in [".", "X", "|", "-", "+"]:
-            return "go"
-        elif self.map_grid[self.row + dlt_row][self.col + dlt_col] == "#":
-            return "turn"
-        elif self.map_grid[self.row + dlt_row][self.col + dlt_col] == "O":
-            return "O"    
-        else:
-            return "over"
+            return True
+        elif self.map_grid[self.row + dlt_row][self.col + dlt_col] in ["#", "O"]:
+            return False
         
     def move(self):
         dlt_row, dlt_col = self.get_direction()
@@ -46,7 +41,7 @@ class Karel:
     def print_map(self):
         i, j = self.get_position()
         i_s = max(0, i - 10)
-        i_e = min(i_s + 20, 130)
+        i_e = min(i_s + 20, len(self.map_grid))
 
         for k in range(i_s, i_e):
             row = self.map_grid[k]
@@ -60,7 +55,7 @@ class Karel:
         self.symbol = symbols[(index + 1) % 4]
 
     def __str__(self):
-        return f'{self.row}, {self.col}, {self.symbol}'
+        return f'Karel is at {self.row}, {self.col}, facing {self.symbol}'
     
     def count_beepers(self):
         beepers = 0
@@ -75,39 +70,51 @@ def is_loop(i, j):
     map_grid = get_map()
     m, n = len(map_grid), len(map_grid[0])
     row, col, symbol = find_karel(map_grid)
-    karel = Karel(row, col, symbol, map_grid)
+    map_grid[row][col] = "." # temporary move Karel
+    karel = Karel(41, 8, symbol, map_grid) # hard code karel position
+    # karel = Karel(row, col, symbol, map_grid)
     karel.set_obstruction(i, j)
     breadcrumbs = {}
     while True:
+        karel.print_map()
+        print(karel, "obstruction placed at:",i, j)
+        time.sleep(0.01)
         try:
-            if karel.if_front_is_clear() == "go":
-                karel.put_beeper()
-            elif karel.if_front_is_clear() == "turn":
+            turn = "no"
+            rotate_count = 0
+            while not karel.if_front_is_clear():
                 karel.turn_right()
+                rotate_count += 1
+                turn = "yes"
+            
+            if turn == "yes":
                 karel.put_beeper_corner()
-            elif karel.if_front_is_clear() == "O":
-                karel.turn_right()
-                karel.put_beeper_corner()
-            elif karel.if_front_is_clear() == "over":
-                raise IndexError
-            karel.move()
-            x, y = karel.get_position()
-            symbol = karel.get_direction()
-            if (x, y, symbol) in breadcrumbs:
-                return True
             else:
-                breadcrumbs[(x, y, symbol)] = 1
+                karel.put_beeper()
+            karel.move()
+
+            x, y = karel.get_position()
+            symbol = karel.symbol
+            if (str(x) + str(y) + symbol) in breadcrumbs:
+                breadcrumbs[str(x) + str(y) + symbol] += 1
+                if breadcrumbs[str(x) + str(y) + symbol] > 3:
+                    print("breadcrumb =", breadcrumbs[str(x) + str(y) + symbol])
+                    return True
+            else:
+                breadcrumbs[str(x) + str(y) + symbol] = 1
+                with open("bread.txt", "a") as bread:
+                    bread.write(f"{x}, {y}, {symbol}\n")
 
             if x < 0 or x > m or y < 0 or y > n:
                 raise IndexError
             
         except IndexError:
-            karel.put_beeper()
             break
+        
 
 def get_map():
     map_grid = []
-    with open("p1sdata.txt") as file:
+    with open("data.txt") as file:
         for line in file:
             row = [c for c in line.strip()]
             map_grid.append(row)
@@ -125,8 +132,11 @@ if __name__ == "__main__":
     count = 0
     map_grid = get_map()
     m, n = len(map_grid), len(map_grid[0])
-    for i in range(m):
-        for j in range(n):
+    for i in range(6, 7):
+        for j in range(26, 27):
             if is_loop(i, j):
                 count += 1
+                print(count, i, j)
+                # with open("camel.txt", "a") as output:
+                #     output.write(f"{count}, {i}, {j}\n")
     print("total position count:", count)
